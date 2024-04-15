@@ -4,7 +4,7 @@ enum CalculatorOperationType {
   add('+'),
   substract('-'),
   multiply('x'),
-  divide('+'),
+  divide('÷'),
   equals('='),
   number('N');
 
@@ -23,12 +23,20 @@ class _CalculatorOperation {
 }
 
 class CalculatorEngine {
+  CalculatorEngine();
+
   final Queue<_CalculatorOperation> _inputQueue = Queue();
 
   String _currentDisplay = '0';
   bool _clearDisplay = true;
+  CalculatorOperationType _lastOperation = CalculatorOperationType.number;
+  String _currentExpression = '';
+  final List<String> _calculations = [];
 
   String get display => _currentDisplay;
+  String get lastOperationKey => _lastOperation.keyCharacter;
+  String get currentExpression => _currentExpression;
+  List<String> get calculations => _calculations;
 
   double _add(double a, double b) {
     return a + b;
@@ -59,6 +67,7 @@ class CalculatorEngine {
         }
         // append the number to the current display
         _currentDisplay += input;
+        _currentExpression += input;
       } else {
         // scenario where the user enters an operation after an operation
         if (_clearDisplay && _inputQueue.isNotEmpty) {
@@ -74,6 +83,8 @@ class CalculatorEngine {
           // add the operation to the queue
           _inputQueue.add(_CalculatorOperation(operationType, 0));
         }
+        _lastOperation = operationType;
+        _currentExpression += ' $input ';
       }
     }
   }
@@ -95,6 +106,8 @@ class CalculatorEngine {
   void _calculate() {
     _inputQueue.add(_CalculatorOperation(
         CalculatorOperationType.number, double.parse(_currentDisplay)));
+
+    _currentExpression += _currentDisplay;
 
     double currentValue = 0;
     CalculatorOperationType lastOperation = CalculatorOperationType.number;
@@ -133,6 +146,11 @@ class CalculatorEngine {
     } else {
       _currentDisplay = currentValue.toString();
     }
+
+    _calculations.add('$_currentExpression = $_currentDisplay');
+
     _clearDisplay = true;
+    _lastOperation = CalculatorOperationType.number;
+    _currentExpression = '';
   }
 }

@@ -24,8 +24,9 @@ class CalculatorDisplay extends StatelessWidget {
       ),
       child: Text(
         displayText,
+        overflow: TextOverflow.ellipsis,
         style: GoogleFonts.orbitron(
-          fontSize: 50,
+          fontSize: 30,
           color: const Color.fromARGB(255, 0, 0, 0),
         ),
       ),

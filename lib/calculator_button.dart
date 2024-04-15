@@ -3,10 +3,32 @@ import 'package:simple_calculator/calculator_engine.dart';
 
 class CalculatorButton extends StatelessWidget {
   const CalculatorButton(
-      {super.key, required this.text, required this.onPressed});
+      {super.key,
+      required this.text,
+      required this.onPressed,
+      this.selected = false});
 
   final String text;
   final VoidCallback onPressed;
+  final bool selected;
+
+  Color _getBackgroundColor() {
+    if (text == CalculatorOperationType.equals.keyCharacter) {
+      return const Color.fromARGB(255, 236, 115, 22);
+    } else if (selected) {
+      return const Color.fromARGB(0, 227, 227, 227);
+    } else {
+      return const Color.fromARGB(255, 227, 227, 227);
+    }
+  }
+
+  Color _getShadowColor() {
+    if (text == CalculatorOperationType.equals.keyCharacter) {
+      return const Color.fromARGB(127, 236, 115, 22);
+    } else {
+      return const Color.fromARGB(153, 227, 227, 227);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,9 +39,7 @@ class CalculatorButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: (text == CalculatorOperationType.equals.keyCharacter
-                ? const Color.fromARGB(127, 236, 115, 22)
-                : const Color.fromARGB(153, 227, 227, 227)),
+            color: _getShadowColor(),
             spreadRadius: 1,
             offset: const Offset(0, 5),
           ),
@@ -28,9 +48,7 @@ class CalculatorButton extends StatelessWidget {
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-          backgroundColor: text == CalculatorOperationType.equals.keyCharacter
-              ? const Color.fromARGB(255, 236, 115, 22)
-              : const Color.fromARGB(255, 227, 227, 227),
+          backgroundColor: _getBackgroundColor(),
           foregroundColor: Colors.black,
           textStyle: const TextStyle(
             fontSize: 50,

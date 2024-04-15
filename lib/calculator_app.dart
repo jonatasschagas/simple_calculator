@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:simple_calculator/calculator_engine.dart';
 import 'package:simple_calculator/calculator_keyboard.dart';
 import 'package:simple_calculator/calculator_display.dart';
+import 'package:simple_calculator/notebook_calculations.dart';
 
 class CalculatorApp extends StatefulWidget {
   const CalculatorApp({super.key});
@@ -32,28 +33,43 @@ class CalculatorAppState extends State<CalculatorApp> {
           title: const Text('Calculator'),
         ),
         body: Center(
-          child: Container(
-            width: 380,
-            height: 500,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: const Color.fromARGB(255, 130, 128, 128),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color.fromARGB(255, 82, 82, 82).withOpacity(1),
-                  spreadRadius: 1,
-                  offset: const Offset(0, 20),
+          child: Column(
+            children: [
+              Container(
+                width: 380,
+                height: 500,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: const Color.fromARGB(255, 130, 128, 128),
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          const Color.fromARGB(255, 82, 82, 82).withOpacity(1),
+                      spreadRadius: 1,
+                      offset: const Offset(0, 20),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(children: [
-                CalculatorDisplay(displayText: calculatorEngine.display),
-                const SizedBox(height: 20),
-                CalculatorKeyboard(onKeyPressed: onKeyPressed),
-              ]),
-            ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(children: [
+                    CalculatorDisplay(
+                      displayText: calculatorEngine.display,
+                    ),
+                    const SizedBox(height: 20),
+                    CalculatorKeyboard(
+                      onKeyPressed: onKeyPressed,
+                      selectedKey: calculatorEngine.lastOperationKey,
+                    ),
+                  ]),
+                ),
+              ),
+              const SizedBox(height: 20),
+              NotebookCalculations(calculations: [
+                calculatorEngine.currentExpression,
+                ...calculatorEngine.calculations.reversed,
+              ])
+            ],
           ),
         ),
       ),
