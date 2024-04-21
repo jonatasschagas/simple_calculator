@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:simple_calculator/calculator_engine.dart';
-import 'package:simple_calculator/calculator_keyboard.dart';
-import 'package:simple_calculator/calculator_display.dart';
-import 'package:simple_calculator/notebook_calculations.dart';
+import 'package:simple_calculator/calculator/calculator_engine.dart';
+import 'package:simple_calculator/calculator/calculator.dart';
+import 'package:simple_calculator/notebook/notebook_calculations.dart';
 
 class CalculatorApp extends StatefulWidget {
   const CalculatorApp({super.key});
@@ -29,47 +28,32 @@ class CalculatorAppState extends State<CalculatorApp> {
         useMaterial3: true,
       ),
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Calculator'),
-        ),
         body: Center(
-          child: Column(
-            children: [
-              Container(
-                width: 380,
-                height: 500,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: const Color.fromARGB(255, 130, 128, 128),
-                  boxShadow: [
-                    BoxShadow(
-                      color:
-                          const Color.fromARGB(255, 82, 82, 82).withOpacity(1),
-                      spreadRadius: 1,
-                      offset: const Offset(0, 20),
-                    ),
-                  ],
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(children: [
-                    CalculatorDisplay(
-                      displayText: calculatorEngine.display,
-                    ),
-                    const SizedBox(height: 20),
-                    CalculatorKeyboard(
-                      onKeyPressed: onKeyPressed,
-                      selectedKey: calculatorEngine.lastOperationKey,
-                    ),
-                  ]),
-                ),
+          child: Container(
+            width: 500,
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/table-top.jpeg'),
+                fit: BoxFit.fitHeight,
               ),
-              const SizedBox(height: 20),
-              NotebookCalculations(calculations: [
-                calculatorEngine.currentExpression,
-                ...calculatorEngine.calculations.reversed,
-              ])
-            ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Calculator(
+                  calculations: calculatorEngine.calculations,
+                  onKeyPressed: onKeyPressed,
+                  lastOperationKey: calculatorEngine.lastOperationKey,
+                  displayText: calculatorEngine.display,
+                ),
+                const SizedBox(height: 35),
+                NotebookCalculations(calculations: [
+                  calculatorEngine.currentExpression,
+                  ...calculatorEngine.calculations.reversed,
+                ])
+              ],
+            ),
           ),
         ),
       ),
