@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:simple_calculator/calculator/calculator_button.dart';
 import 'package:simple_calculator/calculator/calculator_engine.dart';
+import 'package:simple_calculator/utils/size.dart';
 
 class CalculatorKeyboard extends StatelessWidget {
   const CalculatorKeyboard(
@@ -23,31 +24,39 @@ class CalculatorKeyboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    dynamic paddingBetweenRows = getHeight(context) * 0.020;
+
     var firstRow = [
-      '7',
-      '8',
-      '9',
+      CalculatorOperationType.clear.keyCharacter,
+      CalculatorOperationType.sign.keyCharacter,
+      CalculatorOperationType.percent.keyCharacter,
       CalculatorOperationType.divide.keyCharacter,
     ].map((e) => _renderButton(e)).toList();
 
     var secondRow = [
-      '4',
-      '5',
-      '6',
+      '7',
+      '8',
+      '9',
       CalculatorOperationType.multiply.keyCharacter,
     ].map((e) => _renderButton(e)).toList();
 
     var thirdRow = [
-      '1',
-      '2',
-      '3',
+      '4',
+      '5',
+      '6',
       CalculatorOperationType.substract.keyCharacter,
     ].map((e) => _renderButton(e)).toList();
 
     var fourthRow = [
-      '0',
-      '.',
+      '1',
+      '2',
+      '3',
       CalculatorOperationType.add.keyCharacter,
+    ].map((e) => _renderButton(e)).toList();
+
+    var fifthRow = [
+      '0',
+      CalculatorOperationType.dot.keyCharacter,
       CalculatorOperationType.equals.keyCharacter,
     ].map((e) => _renderButton(e)).toList();
 
@@ -55,29 +64,35 @@ class CalculatorKeyboard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       mainAxisSize: MainAxisSize.max,
       children: [
-        const SizedBox(height: 20),
+        SizedBox(height: paddingBetweenRows),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: firstRow,
         ),
-        const SizedBox(height: 20), // Add this line (1)
+        SizedBox(height: paddingBetweenRows), // Add this line (1)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: secondRow,
         ),
-        const SizedBox(height: 20), // Add this line (2)
+        SizedBox(height: paddingBetweenRows), // Add this line (2)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: thirdRow,
         ),
-        const SizedBox(height: 20), // Add this line (3)
+        SizedBox(height: paddingBetweenRows), // Add this line (3)
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: fourthRow,
+        ),
+        SizedBox(height: paddingBetweenRows), // Add this line (3)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: fifthRow,
         ),
       ],
     );

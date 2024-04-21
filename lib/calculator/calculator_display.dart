@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:simple_calculator/utils/size.dart';
 
 class CalculatorDisplay extends StatelessWidget {
   const CalculatorDisplay({super.key, this.displayText = ''});
@@ -8,9 +9,13 @@ class CalculatorDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    dynamic displayWidth = getWidth(context) * 0.8;
+    dynamic displayHeight = getHeight(context) * 0.06;
+    dynamic displayFontSize = displayHeight * 0.5;
+
     return Container(
-      height: 70,
-      width: 400,
+      width: displayWidth,
+      height: displayHeight,
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
       alignment: Alignment.centerRight,
       decoration: BoxDecoration(
@@ -28,7 +33,7 @@ class CalculatorDisplay extends StatelessWidget {
         displayText,
         overflow: TextOverflow.ellipsis,
         style: GoogleFonts.orbitron(
-          fontSize: 30,
+          fontSize: displayFontSize,
           color: const Color.fromARGB(255, 0, 0, 0),
         ),
       ),

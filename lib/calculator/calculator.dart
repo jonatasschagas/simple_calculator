@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:simple_calculator/calculator/calculator_keyboard.dart';
 import 'package:simple_calculator/calculator/calculator_display.dart';
+import 'package:simple_calculator/utils/size.dart';
 
 class Calculator extends StatelessWidget {
   const Calculator(
@@ -18,9 +19,12 @@ class Calculator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    dynamic calculatorWidth = getWidth(context) * 0.8;
+    dynamic calculatorHeight = getHeight(context) * 0.64;
+
     return Container(
-      width: 400,
-      height: 515,
+      width: calculatorWidth,
+      height: calculatorHeight,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         color: const Color.fromARGB(255, 97, 98, 104),

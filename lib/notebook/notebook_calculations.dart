@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:simple_calculator/utils/size.dart';
 
 class NotebookCalculations extends StatelessWidget {
   const NotebookCalculations({super.key, required this.calculations});
@@ -8,8 +9,12 @@ class NotebookCalculations extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    dynamic notebookWidth = getWidth(context) * 0.8;
+    dynamic notebookHeight = getHeight(context) * 0.2;
+    dynamic fontSize = notebookHeight * 0.1;
+
     var calculationsWidgets = calculations.map((c) => Container(
-          width: 400,
+          width: notebookWidth,
           padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -23,14 +28,14 @@ class NotebookCalculations extends StatelessWidget {
           child: Text(
             c,
             style: GoogleFonts.cedarvilleCursive(
-              fontSize: 20,
+              fontSize: fontSize,
             ),
           ),
         ));
 
     return Container(
-      height: 250,
-      width: 400,
+      height: notebookHeight,
+      width: notebookWidth,
       decoration: const BoxDecoration(
         color: Colors.white,
       ),

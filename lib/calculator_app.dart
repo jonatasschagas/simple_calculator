@@ -30,11 +30,11 @@ class CalculatorAppState extends State<CalculatorApp> {
       home: Scaffold(
         body: Center(
           child: Container(
-            width: 500,
+            width: double.infinity,
             decoration: const BoxDecoration(
               image: DecorationImage(
                 image: AssetImage('assets/images/table-top.jpeg'),
-                fit: BoxFit.fitHeight,
+                fit: BoxFit.cover,
               ),
             ),
             child: Column(
