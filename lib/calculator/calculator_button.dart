@@ -40,7 +40,7 @@ class CalculatorButton extends StatelessWidget {
 
     var buttonWidth = text == '0' ? width * 0.3 : width * 0.145;
     var buttonHeight = height * 0.07;
-    var buttonPadding = EdgeInsets.fromLTRB(0, 10, 0, 10);
+    var buttonPadding = const EdgeInsets.fromLTRB(0, 10, 0, 10);
 
     return Container(
       width: buttonWidth,

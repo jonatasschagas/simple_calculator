@@ -131,12 +131,19 @@ class CalculatorEngine {
     }
 
     if (!isNegative) {
+      bool addedNegative = false;
       for (int i = _currentExpression.length - 1; i >= 0; i--) {
-        CalculatorOperationType operationType =
-            _getOperationType(_currentExpression[i]);
+        var currentChar = _currentExpression[i];
+        CalculatorOperationType operationType = _getOperationType(currentChar);
         if (_operations.contains(operationType)) {
           _currentExpression.insert(i, '-');
+          addedNegative = true;
+          break;
         }
+      }
+
+      if (!addedNegative) {
+        _currentExpression.insert(0, '-');
       }
     }
 
