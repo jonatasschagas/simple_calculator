@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:simple_calculator/calculator/calculator_engine.dart';
 import 'package:simple_calculator/calculator/calculator.dart';
-import 'package:simple_calculator/calculator/calculator_engine2.dart';
 import 'package:simple_calculator/notebook/notebook_calculations.dart';
 
 class CalculatorApp extends StatefulWidget {
@@ -12,16 +11,16 @@ class CalculatorApp extends StatefulWidget {
 }
 
 class CalculatorAppState extends State<CalculatorApp> {
-  //final CalculatorEngine calculatorEngine = CalculatorEngine();
-  final CalculatorEngine2 calculatorEngine = CalculatorEngine2();
+  final CalculatorEngine calculatorEngine = CalculatorEngine();
 
+  @override
   void initState() {
     super.initState();
     calculatorEngine.onCalculationCompletedHandler =
         onCalculationCompletedHandler;
   }
 
-  List<String> _calculations = [];
+  final List<String> _calculations = [];
 
   void onCalculationCompletedHandler(String calculation) {
     setState(() {
@@ -58,7 +57,6 @@ class CalculatorAppState extends State<CalculatorApp> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Calculator(
-                  //calculations: calculatorEngine.calculations,
                   calculations: _calculations,
                   onKeyPressed: onKeyPressed,
                   lastOperationKey: calculatorEngine.lastOperationKey,
@@ -67,7 +65,6 @@ class CalculatorAppState extends State<CalculatorApp> {
                 const SizedBox(height: 35),
                 NotebookCalculations(calculations: [
                   calculatorEngine.currentExpression,
-                  //...calculatorEngine.calculations.reversed,
                   ..._calculations.reversed,
                 ])
               ],

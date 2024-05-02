@@ -1,4 +1,4 @@
-import 'dart:collection';
+import 'dart:math';
 
 enum CalculatorOperationType {
   add('+'),
@@ -10,7 +10,9 @@ enum CalculatorOperationType {
   clear('C'),
   percent('%'),
   number('N'),
-  dot('.');
+  dot('.'),
+  openParenthesis('('),
+  closeParenthesis(')');
 
   const CalculatorOperationType(this._keyCharacter);
 
@@ -19,23 +21,20 @@ enum CalculatorOperationType {
   String get keyCharacter => _keyCharacter;
 }
 
-class _CalculatorOperation {
+class CalculatorOperation {
   CalculatorOperationType operation;
   double operand;
 
-  _CalculatorOperation(this.operation, this.operand);
+  CalculatorOperation(this.operation, this.operand);
 }
 
 class CalculatorEngine {
   CalculatorEngine();
 
-  final Queue<_CalculatorOperation> _inputQueue = Queue();
-
-  String _currentDisplay = '0';
-  bool _expectNewNumber = true;
+  final List<CalculatorOperation> _currentExpression = [];
+  bool _clearDisplay = false;
   CalculatorOperationType _lastOperation = CalculatorOperationType.number;
-  final List<String> _currentExpression = [];
-  final List<String> _calculations = [];
+
   final List<CalculatorOperationType> _operations = [
     CalculatorOperationType.add,
     CalculatorOperationType.substract,
@@ -43,10 +42,20 @@ class CalculatorEngine {
     CalculatorOperationType.divide
   ];
 
-  String get display => _currentDisplay;
+  String get display => _currentExpression.isEmpty
+      ? ''
+      : _formatNumber(_currentExpression.last.operand);
   String get lastOperationKey => _lastOperation.keyCharacter;
-  String get currentExpression => _currentExpression.join(" ");
-  List<String> get calculations => _calculations;
+  String get currentExpression => _currentExpression
+      .map((e) => e.operation == CalculatorOperationType.number
+          ? _formatNumber(e.operand)
+          : e.operation.keyCharacter)
+      .join(" ");
+
+  void Function(String) _onCalculationCompleted = (String result) {};
+  set onCalculationCompletedHandler(void Function(String) handler) {
+    _onCalculationCompleted = handler;
+  }
 
   double _add(double a, double b) {
     return a + b;
@@ -65,6 +74,13 @@ class CalculatorEngine {
   }
 
   void handleInput(String input) {
+    if (_clearDisplay) {
+      if (_currentExpression.isNotEmpty) {
+        _currentExpression.last.operand = 0;
+      }
+      _clearDisplay = false;
+    }
+
     CalculatorOperationType operationType = _getOperationType(input);
 
     if (operationType == CalculatorOperationType.clear) {
@@ -75,10 +91,6 @@ class CalculatorEngine {
     if (operationType == CalculatorOperationType.number ||
         operationType == CalculatorOperationType.dot) {
       _processNumber(input);
-      return;
-    }
-
-    if (_expectNewNumber) {
       return;
     }
 
@@ -116,111 +128,99 @@ class CalculatorEngine {
   }
 
   void _clear() {
-    _currentDisplay = '0';
-    _expectNewNumber = true;
     _lastOperation = CalculatorOperationType.number;
     _currentExpression.clear();
   }
 
   void _changeSign() {
-    bool isNegative = _currentDisplay.startsWith('-');
-    if (_currentDisplay.startsWith('-')) {
-      _currentDisplay = _currentDisplay.substring(1);
-    } else {
-      _currentDisplay = '-$_currentDisplay';
+    if (_currentExpression.isEmpty ||
+        _currentExpression.last.operation != CalculatorOperationType.number) {
+      return;
     }
 
-    if (!isNegative) {
-      bool addedNegative = false;
-      for (int i = _currentExpression.length - 1; i >= 0; i--) {
-        var currentChar = _currentExpression[i];
-        CalculatorOperationType operationType = _getOperationType(currentChar);
-        if (_operations.contains(operationType)) {
-          _currentExpression.insert(i, '-');
-          addedNegative = true;
-          break;
-        }
-      }
-
-      if (!addedNegative) {
-        _currentExpression.insert(0, '-');
-      }
-    }
-
-    _currentExpression.removeLast();
-    _currentExpression.add(_currentDisplay);
+    _currentExpression.last.operand *= -1;
   }
 
   void _percent() {
-    double value = double.parse(_currentDisplay);
-    value = value / 100;
-    _currentDisplay = value.toString();
+    if (_currentExpression.isEmpty ||
+        _currentExpression.last.operation != CalculatorOperationType.number) {
+      return;
+    }
+
+    _currentExpression.last.operand /= 100;
   }
 
   void _processNumber(String input) {
     if (input == CalculatorOperationType.dot.keyCharacter &&
-        _currentDisplay.contains(CalculatorOperationType.dot.keyCharacter)) {
-      // if the current display already contains a dot, return
+        !_isInteger(_currentExpression.last.operand)) {
+      // current number is already a decimal
       return;
     }
 
-    if (_expectNewNumber) {
-      _currentDisplay = '';
-      _expectNewNumber = false;
+    if (_currentExpression.isNotEmpty) {
+      // assumes the last element in the expression is number
+      var currentNumber = _currentExpression.last.operand;
+      _currentExpression.last.operand =
+          currentNumber * 10 + double.parse(input);
+    } else {
+      _currentExpression.add(CalculatorOperation(
+          CalculatorOperationType.number, double.parse(input)));
     }
-    // append the number to the current display
-    _currentDisplay += input;
-    _currentExpression.add(input);
   }
 
   void _processOperation(CalculatorOperationType operationType) {
-    // scenario where the user enters an operation after an operation
-    if (_expectNewNumber && _inputQueue.isNotEmpty) {
-      // remove the last operation
-      _inputQueue.removeLast();
-      // add the operation to the queue
-      _inputQueue.add(_CalculatorOperation(operationType, 0));
-    } else {
-      _expectNewNumber = true;
-      // add the number to the queue
-      _inputQueue.add(_CalculatorOperation(
-          CalculatorOperationType.number, double.parse(_currentDisplay)));
-      // add the operation to the queue
-      _inputQueue.add(_CalculatorOperation(operationType, 0));
+    if (_currentExpression.length >= 3 &&
+        (operationType == CalculatorOperationType.multiply ||
+            operationType == CalculatorOperationType.divide)) {
+      // add parentheses to the current expression
+      _currentExpression.insert(
+          0, CalculatorOperation(CalculatorOperationType.openParenthesis, 0));
+      _currentExpression.add(
+          CalculatorOperation(CalculatorOperationType.closeParenthesis, 0));
     }
+    _currentExpression.add(CalculatorOperation(operationType, 0));
+    _currentExpression
+        .add(CalculatorOperation(CalculatorOperationType.number, 0));
     _lastOperation = operationType;
-    _currentExpression.add(operationType.keyCharacter);
+    _clearDisplay = true;
+  }
+
+  String _formatNumber(double number) {
+    if (number == 0) {
+      return '';
+    }
+    if (_isInteger(number)) {
+      return number.toInt().toString();
+    } else {
+      return number.toString();
+    }
+  }
+
+  bool _isInteger(double number) {
+    return number == number.toInt();
   }
 
   void _calculate() {
-    _inputQueue.add(_CalculatorOperation(
-        CalculatorOperationType.number, double.parse(_currentDisplay)));
+    _currentExpression
+        .add(CalculatorOperation(CalculatorOperationType.equals, 0));
 
     double currentValue = 0;
     CalculatorOperationType lastOperation = CalculatorOperationType.number;
-    while (_inputQueue.isNotEmpty) {
-      _CalculatorOperation operation = _inputQueue.removeFirst();
-
+    for (int i = 0; i < _currentExpression.length; i++) {
+      CalculatorOperation operation = _currentExpression[i];
       if (operation.operation == CalculatorOperationType.number) {
+        var currentNumber = operation.operand;
         if (currentValue == 0) {
           currentValue = operation.operand;
         } else {
-          double valueToUse = operation.operand;
-          switch (lastOperation) {
-            case CalculatorOperationType.add:
-              currentValue = _add(currentValue, valueToUse);
-              break;
-            case CalculatorOperationType.substract:
-              currentValue = _subtract(currentValue, valueToUse);
-              break;
-            case CalculatorOperationType.multiply:
-              currentValue = _multiply(currentValue, valueToUse);
-              break;
-            case CalculatorOperationType.divide:
-              currentValue = _divide(currentValue, valueToUse);
-              break;
-            default:
-              break;
+          if (lastOperation == CalculatorOperationType.add) {
+            currentValue = _add(currentValue, currentNumber);
+          } else if (lastOperation == CalculatorOperationType.substract) {
+            currentValue = _subtract(currentValue, currentNumber);
+          } else if (lastOperation == CalculatorOperationType.multiply) {
+            currentValue = _multiply(currentValue, currentNumber);
+          } else if (lastOperation == CalculatorOperationType.divide) {
+            currentValue = _divide(currentValue, currentNumber);
           }
         }
       } else {
@@ -228,17 +228,10 @@ class CalculatorEngine {
       }
     }
 
-    if (currentValue is int || currentValue == currentValue.roundToDouble()) {
-      _currentDisplay = ((currentValue.round())).toString();
-    } else {
-      _currentDisplay = currentValue.toString();
-    }
-
-    var currentExpressionSerialized = _currentExpression.join(" ");
-    _calculations.add('$currentExpressionSerialized = $_currentDisplay');
-
-    _expectNewNumber = true;
-    _lastOperation = CalculatorOperationType.number;
+    _currentExpression
+        .add(CalculatorOperation(CalculatorOperationType.number, currentValue));
+    _onCalculationCompleted(currentExpression);
     _currentExpression.clear();
+    _clearDisplay = true;
   }
 }
