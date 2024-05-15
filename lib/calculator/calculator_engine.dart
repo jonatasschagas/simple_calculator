@@ -33,6 +33,7 @@ class CalculatorEngine {
 
   final List<CalculatorOperation> _currentExpression = [];
   bool _clearDisplay = false;
+  bool _nextNumberShouldBeDecimal = false;
   CalculatorOperationType _lastOperation = CalculatorOperationType.number;
 
   final List<CalculatorOperationType> _operations = [
@@ -151,9 +152,19 @@ class CalculatorEngine {
   }
 
   void _processNumber(String input) {
-    if (input == CalculatorOperationType.dot.keyCharacter &&
-        !_isInteger(_currentExpression.last.operand)) {
+    if (input == CalculatorOperationType.dot.keyCharacter) {
       // current number is already a decimal
+      if (!_isInteger(_currentExpression.last.operand)) {
+        return;
+      } else {
+        _nextNumberShouldBeDecimal = true;
+        return;
+      }
+    }
+
+    if (_nextNumberShouldBeDecimal) {
+      _currentExpression.last.operand += double.parse('0.$input');
+      _nextNumberShouldBeDecimal = false;
       return;
     }
 
