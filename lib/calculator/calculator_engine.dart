@@ -132,6 +132,7 @@ class CalculatorEngine {
   void _clear() {
     _lastOperation = CalculatorOperationType.number;
     _currentExpression.clear();
+    _lastResult = Decimal.zero;
   }
 
   void _changeSign() {
@@ -254,7 +255,7 @@ class CalculatorEngine {
     _currentExpression
         .add(CalculatorOperation(CalculatorOperationType.number, currentValue));
     _onCalculationCompleted(currentExpression);
-    _lastResult = currentValue;
     _clear();
+    _lastResult = currentValue;
   }
 }
