@@ -13,7 +13,8 @@ enum CalculatorOperationType {
   number('N'),
   dot('.'),
   openParenthesis('('),
-  closeParenthesis(')');
+  closeParenthesis(')'),
+  empty('');
 
   const CalculatorOperationType(this._keyCharacter);
 
@@ -36,6 +37,7 @@ class CalculatorEngine {
   bool _clearDisplay = false;
   bool _nextNumberShouldBeDecimal = false;
   CalculatorOperationType _lastOperation = CalculatorOperationType.number;
+  Decimal _lastResult = Decimal.zero;
 
   final List<CalculatorOperationType> _operations = [
     CalculatorOperationType.add,
@@ -203,16 +205,18 @@ class CalculatorEngine {
 
   String _getLastNumberInCurrentExpression () {
     if (_currentExpression.isEmpty) {
+      if (_lastResult != Decimal.zero) {
+        return _lastResult.toString();
+      }
       return '';
     }
 
-    for (CalculatorOperation op in _currentExpression.reversed) {
-      if (op.operation == CalculatorOperationType.number && op.operand != Decimal.zero) {
-        return op.operand.toString();
-      }
-    }
+    Decimal lastNumber = _currentExpression.reversed.firstWhere(
+      (op) => op.operation == CalculatorOperationType.number && op.operand != Decimal.zero,
+      orElse: () => CalculatorOperation(CalculatorOperationType.empty, Decimal.zero),
+    ).operand;
 
-    return '';
+    return lastNumber.toString();
   }
 
   bool _isInteger(Decimal decimal) {
@@ -250,6 +254,7 @@ class CalculatorEngine {
     _currentExpression
         .add(CalculatorOperation(CalculatorOperationType.number, currentValue));
     _onCalculationCompleted(currentExpression);
-    _currentExpression.clear();
+    _lastResult = currentValue;
+    _clear();
   }
 }
