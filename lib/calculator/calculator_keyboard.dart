@@ -12,7 +12,6 @@ class CalculatorKeyboard extends StatelessWidget {
   final String selectedKey;
 
   CalculatorButton _renderButton(String key) {
-    if (key == selectedKey) print('selectedKey: $selectedKey');
     return CalculatorButton(
       text: key,
       onPressed: () {
