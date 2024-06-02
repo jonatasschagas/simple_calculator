@@ -31,7 +31,7 @@ void main() {
     test('CalculatorEngine should multiply numbers', () {
       final calculatorEngine = CalculatorEngine();
       calculatorEngine.onCalculationCompletedHandler = (String result) {
-        expect(result, '5 * 2 = 10');
+        expect(result, '5 x 2 = 10');
       };
 
       calculatorEngine.handleInput('5');

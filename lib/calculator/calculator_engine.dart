@@ -1,4 +1,5 @@
-import 'dart:math';
+
+import 'package:decimal/decimal.dart';
 
 enum CalculatorOperationType {
   add('+'),
@@ -23,7 +24,7 @@ enum CalculatorOperationType {
 
 class CalculatorOperation {
   CalculatorOperationType operation;
-  double operand;
+  Decimal operand;
 
   CalculatorOperation(this.operation, this.operand);
 }
@@ -43,9 +44,7 @@ class CalculatorEngine {
     CalculatorOperationType.divide
   ];
 
-  String get display => _currentExpression.isEmpty
-      ? ''
-      : _formatNumber(_currentExpression.last.operand);
+  String get display => _getLastNumberInCurrentExpression();
   String get lastOperationKey => _lastOperation.keyCharacter;
   String get currentExpression => _currentExpression
       .map((e) => e.operation == CalculatorOperationType.number
@@ -58,26 +57,26 @@ class CalculatorEngine {
     _onCalculationCompleted = handler;
   }
 
-  double _add(double a, double b) {
+  Decimal _add(Decimal a, Decimal b) {
     return a + b;
   }
 
-  double _subtract(double a, double b) {
+  Decimal _subtract(Decimal a, Decimal b) {
     return a - b;
   }
 
-  double _multiply(double a, double b) {
+  Decimal _multiply(Decimal a, Decimal b) {
     return a * b;
   }
 
-  double _divide(double a, double b) {
-    return a / b;
+  Decimal _divide(Decimal a, Decimal b) {
+    return (a.toRational() / b.toRational()).toDecimal();
   }
 
   void handleInput(String input) {
     if (_clearDisplay) {
       if (_currentExpression.isNotEmpty) {
-        _currentExpression.last.operand = 0;
+        _currentExpression.last.operand = Decimal.zero;
       }
       _clearDisplay = false;
     }
@@ -139,7 +138,7 @@ class CalculatorEngine {
       return;
     }
 
-    _currentExpression.last.operand *= -1;
+    _currentExpression.last.operand = _currentExpression.last.operand * Decimal.parse('-1');
   }
 
   void _percent() {
@@ -148,7 +147,7 @@ class CalculatorEngine {
       return;
     }
 
-    _currentExpression.last.operand /= 100;
+    _currentExpression.last.operand = (_currentExpression.last.operand.toRational() / Decimal.fromInt(100).toRational()).toDecimal();
   }
 
   void _processNumber(String input) {
@@ -163,7 +162,7 @@ class CalculatorEngine {
     }
 
     if (_nextNumberShouldBeDecimal) {
-      _currentExpression.last.operand += double.parse('0.$input');
+      _currentExpression.last.operand += Decimal.parse('0.$input');
       _nextNumberShouldBeDecimal = false;
       return;
     }
@@ -172,10 +171,10 @@ class CalculatorEngine {
       // assumes the last element in the expression is number
       var currentNumber = _currentExpression.last.operand;
       _currentExpression.last.operand =
-          currentNumber * 10 + double.parse(input);
+          currentNumber * Decimal.ten + Decimal.parse(input);
     } else {
       _currentExpression.add(CalculatorOperation(
-          CalculatorOperationType.number, double.parse(input)));
+          CalculatorOperationType.number, Decimal.parse(input)));
     }
   }
 
@@ -185,43 +184,52 @@ class CalculatorEngine {
             operationType == CalculatorOperationType.divide)) {
       // add parentheses to the current expression
       _currentExpression.insert(
-          0, CalculatorOperation(CalculatorOperationType.openParenthesis, 0));
+          0, CalculatorOperation(CalculatorOperationType.openParenthesis, Decimal.zero));
       _currentExpression.add(
-          CalculatorOperation(CalculatorOperationType.closeParenthesis, 0));
+          CalculatorOperation(CalculatorOperationType.closeParenthesis, Decimal.zero));
     }
-    _currentExpression.add(CalculatorOperation(operationType, 0));
+    _currentExpression.add(CalculatorOperation(operationType, Decimal.zero));
     _currentExpression
-        .add(CalculatorOperation(CalculatorOperationType.number, 0));
+        .add(CalculatorOperation(CalculatorOperationType.number, Decimal.zero));
     _lastOperation = operationType;
-    _clearDisplay = true;
   }
 
-  String _formatNumber(double number) {
-    if (number == 0) {
+  String _formatNumber(Decimal number) {
+    if (number == Decimal.zero) {
       return '';
     }
-    if (_isInteger(number)) {
-      return number.toInt().toString();
-    } else {
-      return number.toString();
-    }
+    return number.toString();
   }
 
-  bool _isInteger(double number) {
-    return number == number.toInt();
+  String _getLastNumberInCurrentExpression () {
+    if (_currentExpression.isEmpty) {
+      return '';
+    }
+
+    for (CalculatorOperation op in _currentExpression.reversed) {
+      if (op.operation == CalculatorOperationType.number && op.operand != Decimal.zero) {
+        return op.operand.toString();
+      }
+    }
+
+    return '';
+  }
+
+  bool _isInteger(Decimal decimal) {
+    return decimal == decimal.truncate();
   }
 
   void _calculate() {
     _currentExpression
-        .add(CalculatorOperation(CalculatorOperationType.equals, 0));
+        .add(CalculatorOperation(CalculatorOperationType.equals, Decimal.zero));
 
-    double currentValue = 0;
+    Decimal currentValue = Decimal.zero;
     CalculatorOperationType lastOperation = CalculatorOperationType.number;
     for (int i = 0; i < _currentExpression.length; i++) {
       CalculatorOperation operation = _currentExpression[i];
       if (operation.operation == CalculatorOperationType.number) {
         var currentNumber = operation.operand;
-        if (currentValue == 0) {
+        if (currentValue == Decimal.zero) {
           currentValue = operation.operand;
         } else {
           if (lastOperation == CalculatorOperationType.add) {
@@ -243,6 +251,5 @@ class CalculatorEngine {
         .add(CalculatorOperation(CalculatorOperationType.number, currentValue));
     _onCalculationCompleted(currentExpression);
     _currentExpression.clear();
-    _clearDisplay = true;
   }
 }
